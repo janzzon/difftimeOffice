@@ -25,6 +25,8 @@ library(dplyr)
 # wday(dates_in_span) %in% c(2:6)
 # str(dates_in_span)
 
+# Transform a POSIX time to duration since mid night.
+time_as_duration <- function(x)  as.duration(x - floor_date(x, unit = "day"))
 
 # Set timestamp to be within working hours. all values as duration
 timestamp_day <- function(timestamp){
@@ -32,17 +34,16 @@ timestamp_day <- function(timestamp){
 }
 
 
-	# Input is a vector of dates in POSIX-format
-	# Calculates number of work days, currently just by week days mon-fri
+# Input is a vector of dates in POSIX-format
+# Calculates number of work days, currently just by week days mon-fri
 work_days_n <- function (x){
 	work_days_logical <- wday(x) %in% c(2:6)
 	work_days_logical %>% sum %>% return
 }
 
-work_days_n(dates_in_span)
+# work_days_n(dates_in_span)
 
 
-time_as_duration <- function(x)  as.duration(x - floor_date(x, unit = "day"))
 
 ############################### da function ###############
 
