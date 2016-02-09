@@ -11,4 +11,4 @@ License: GPL-2
 LazyData: TRUE
 Suggests: testthat
 RoxygenNote: 5.0.1
-Imports: magrittr, lubridate
+Imports: magrittr, lubridate, assertthat
