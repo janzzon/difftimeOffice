@@ -6,8 +6,9 @@ Date: 2016-02-08
 Author: Stefan Jansson
 Maintainer: Stefan Jansson <janzzon@gmail.com>
 Description: Calculate number of office hours between time stamps.
-  Office hours is default mon - fri, 8:00 to 16:00
+    Office hours is default mon - fri, 8:00 to 16:00.
 License: GPL-2
 LazyData: TRUE
 Suggests: testthat
-Imports: lubridate, magrittr
+RoxygenNote: 5.0.1
+Imports: magrittr, lubridate
