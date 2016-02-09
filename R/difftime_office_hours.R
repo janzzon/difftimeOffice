@@ -18,7 +18,10 @@
 #' @param working_hours Vector of lenght 2, start and end of office day in hours. Default c(8,16)
 difftime_office_hours <-
 	function(started, ended, working_hours = c(8, 16)) {
-		# When does working hours start at day? decimal hours
+	  # Assert input values is.time
+	  assertthat::assert_that(assertthat::is.time(started))
+	  assertthat::assert_that(assertthat::is.time(ended))
+	  # When does working hours start at day? decimal hours
 	  day_start <-
 	    lubridate::duration(working_hours[1], units = "hours")
 	  # When does working hours end at day? decimal hours
