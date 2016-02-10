@@ -40,10 +40,13 @@ difftime_office_hours <-
 	    lubridate::duration(working_hours[2], units = "hours")
 
 	   # Set timestamp to be within working hours. all values as duration
-	  timestamp_day <- function(timestamp) {
-	    timestamp %>% time_as_duration %>% max(day_start) %>%
-	      min(day_end) %>%  lubridate::as.duration(.)
-	  }
+	  timestamp_day <-
+	  	function(time_vec) {
+	  		lapply (time_vec, function(timestamp) {
+	  			timestamp %>% time_as_duration %>% max(day_start) %>%
+	  				min(day_end)
+	  		}) %>% unlist %>% lubridate::as.duration()
+	  	}
 
 	  # Hours from start time stamp to end of working hours. Full day if not work day.
 	  hours_first_day <-
@@ -54,10 +57,19 @@ difftime_office_hours <-
 	  # cat(paste("Hours first day", hours_first_day,"\nHours last day",hours_last_day))
 
 		# All dates in span started to end, indcluding first + last day
-		dates_in_span <-
-			seq(lubridate::floor_date(started, unit = "day"), lubridate::floor_date(ended, unit = "day"), by = "days")
+	  dates_in_span <-
+	  	mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
+	  
+# 	  
+# 		dates_in_span <-
+# 			seq(lubridate::floor_date(started, unit = "day"), lubridate::floor_date(ended, unit = "day"), by = "days")
 
 		# Hours for working days in span, start + stop day is excluded.
+	  # Fortsätt här! ------------------------- vektorisera anrop till work_days_n
+	  
+	  
+	  lapply(dates_in_span, work_days_n) %>% unlist
+	  
 		hours_working_days <- (work_days_n(dates_in_span) -2 ) *
 			(day_end - day_start)
 		# hours_first_day + hours_last_day +
@@ -86,6 +98,14 @@ time_as_duration <- function(x)  lubridate::as.duration(x - lubridate::floor_dat
 work_days_n <- function (x) {
   work_days_logical <- lubridate::wday(x) %in% c(2:6)
   work_days_logical %>% sum %>% return
+}
+
+# Atomic function to calculate dates in span started to end, indcluding first + last day
+dates_span_fun <- function(started_internal, ended_internal)	{
+	seq(
+		lubridate::floor_date(started_internal, unit = "day"),
+		lubridate::floor_date(ended_internal, unit = "day"), by = "days"
+	)
 }
 
 
