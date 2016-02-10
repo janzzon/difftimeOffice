@@ -26,12 +26,12 @@ difftime_office_hours <-
 		assertthat::assert_that(all(working_hours >= 0))
 		assertthat::assert_that(all(working_hours <= 24))
 		assertthat::assert_that(working_hours[1] <= working_hours[2])
-		
+
 		# see if input values is.time, return NULL if not
 	  if(assertthat::see_if(!all(assertthat::is.time(started),assertthat::is.time(ended)))){
 	  	return(NULL)
-	  } 
-	  
+	  }
+
 	  # When does working hours start at day? decimal hours
 	  day_start <-
 	    lubridate::duration(working_hours[1], units = "hours")
@@ -59,17 +59,14 @@ difftime_office_hours <-
 		# All dates in span started to end, indcluding first + last day
 	  dates_in_span <-
 	  	mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
-	  
-# 	  
+
+#
 # 		dates_in_span <-
 # 			seq(lubridate::floor_date(started, unit = "day"), lubridate::floor_date(ended, unit = "day"), by = "days")
 
 		# Hours for working days in span, start + stop day is excluded.
-	  # Fortsätt här! ------------------------- vektorisera anrop till work_days_n
-	  
-	  
-	  lapply(dates_in_span, work_days_n) %>% unlist
-	  
+
+
 		hours_working_days <- (work_days_n(dates_in_span) -2 ) *
 			(day_end - day_start)
 		# hours_first_day + hours_last_day +
@@ -95,17 +92,22 @@ time_as_duration <- function(x)  lubridate::as.duration(x - lubridate::floor_dat
 # #' @rdname work_days_n
 #' @rdname internal
 #' @keywords internal
-work_days_n <- function (x) {
-  work_days_logical <- lubridate::wday(x) %in% c(2:6)
-  work_days_logical %>% sum %>% return
+#'
+work_days_atomic <- function (x) {
+  # work_days_logical <- lubridate::wday(x) %in% c(2:6)
+  (lubridate::wday(x) %in% c(2:6)) %>% sum %>% return
 }
+
+work_days_n <- function (x) lapply(x, work_days_atomic) %>% unlist
 
 # Atomic function to calculate dates in span started to end, indcluding first + last day
 dates_span_fun <- function(started_internal, ended_internal)	{
+  if(is.na(started_internal) | is.na(ended_internal)) return(NULL)
+
 	seq(
 		lubridate::floor_date(started_internal, unit = "day"),
 		lubridate::floor_date(ended_internal, unit = "day"), by = "days"
-	)
+	) %>% return
 }
 
 
