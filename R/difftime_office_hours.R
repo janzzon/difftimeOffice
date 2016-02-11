@@ -32,6 +32,10 @@ difftime_office_hours <-
     assertthat::assert_that(length(started) == length(ended))
     ### end assertions ####
 
+    # Convert to POSIXct if input is class POSIXlt
+    if(any(class(started) == "POSIXlt")) started <- as.POSIXct(started)
+    if(any(class(ended) == "POSIXlt")) ended <- as.POSIXct(ended)
+
     # Vectors for subsets where time difference is 0/positive or negative
     # Presence of NA in input will give NA as output
     indat_pos <- which(started <= ended)

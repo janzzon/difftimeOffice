@@ -37,6 +37,7 @@ test_that("positive duration return valid data",{
   expect_equal(
     difftime_office_hours(time11, time13,working_hours = c(8,16)),rep(lubridate::duration(43.5, units = "hours"),4)
   )
+  expect_equal(difftime_office_hours(as.POSIXlt(time1), as.POSIXlt(time2)),lubridate::duration(3.5, units = "hours"))
 })
 
 test_that("negative duration return valid data",{
