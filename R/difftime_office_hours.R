@@ -47,7 +47,8 @@ difftime_office_hours <- function(started, ended, working_hours = c(8, 16)) {
 
 }
 
-#' @title Internal calculation of office hours between time stamps
+#' Internal calculation of office hours
+#' @description Internal calculation of office hours between time stamps
 #' @details Don't call this funciton externally, use \code{difftime_office_hours} that validates input and handles NA-values
 #' @param started Start time of period, as POSIX. NA-values is NOT allowed
 #' @param ended End time of period, as POSIX. NA-values is NOT allowed
@@ -99,7 +100,8 @@ difftime_office_hours_no_NA <-   	function(started, ended, working_hours) {
 
 	  }
 
-#' @title POSIX to duration since mid night
+
+#' POSIX to duration since mid night
 #' @param x a vector of objects of class POSIX time
 #' @return object of class duration
 #' @keywords internal

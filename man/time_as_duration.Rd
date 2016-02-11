@@ -12,5 +12,8 @@ time_as_duration(x)
 \value{
 object of class duration
 }
+\description{
+POSIX to duration since mid night
+}
 \keyword{internal}
 

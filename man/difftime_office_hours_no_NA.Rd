@@ -2,7 +2,7 @@
 % Please edit documentation in R/difftime_office_hours.R
 \name{difftime_office_hours_no_NA}
 \alias{difftime_office_hours_no_NA}
-\title{Internal calculation of office hours between time stamps}
+\title{Internal calculation of office hours}
 \usage{
 difftime_office_hours_no_NA(started, ended, working_hours)
 }
@@ -15,6 +15,9 @@ difftime_office_hours_no_NA(started, ended, working_hours)
 }
 \value{
 Number of office hours between time stamps
+}
+\description{
+Internal calculation of office hours between time stamps
 }
 \details{
 Don't call this funciton externally, use \code{difftime_office_hours} that validates input and handles NA-values
