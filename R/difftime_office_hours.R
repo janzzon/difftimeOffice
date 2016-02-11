@@ -4,7 +4,7 @@
 #' Calculate number of office hours between time stamps
 #'
 #' @description
-#' \code{difftime_office_hours} Calculate number of office hours between time stamps. Office hours is default mon - fri, 8:00 to 16:00
+#' Calculate number of office hours between time stamps. Office hours is default mon - fri, 8:00 to 16:00
 #'
 #' @details
 #' More info here later? Or remove...
@@ -16,22 +16,47 @@
 #' @param started Start time of period, as POSIX
 #' @param ended End time of period, as POSIX
 #' @param working_hours Vector of lenght 2, start and end of office day in hours. Default c(8,16)
-difftime_office_hours <-
-	function(started, ended, working_hours = c(8, 16)) {
-		# Assert input working_hours is correct.
+
+# Wrapper function to verify input as valid and to handle NA-values.
+difftime_office_hours <- function(started, ended, working_hours = c(8, 16)) {
+  		# Assert input is correct.
+### Assertions of input ####
 		assertthat::assert_that(is.vector(working_hours))
 		assertthat::assert_that(length(working_hours) ==2 )
-		assertthat::see_if(assertthat::is.number(working_hours[1]))
-		assertthat::see_if(assertthat::is.number(working_hours[2]))
+		assertthat::assert_that(assertthat::is.number(working_hours[1]))
+		assertthat::assert_that(assertthat::is.number(working_hours[2]))
 		assertthat::assert_that(all(working_hours >= 0))
 		assertthat::assert_that(all(working_hours <= 24))
 		assertthat::assert_that(working_hours[1] <= working_hours[2])
+		assertthat::assert_that(all(assertthat::is.time(started),assertthat::is.time(ended)))
+		assertthat::assert_that(length(started) == length(ended))
+### end assertions ####
+    # logical vector for NA in started or ended
 
-		# see if input values is.time, return NULL if not
-	  if(assertthat::see_if(!all(assertthat::is.time(started),assertthat::is.time(ended)))){
-	  	return(NULL)
-	  }
+		indat_complete <- complete.cases(started,ended)
 
+		# create empty result vector
+		result <- rep(lubridate::as.duration(NA),length(started))
+
+		# call function for complete cases of indata
+		result[indat_complete] <-
+		  difftime_office_hours_no_NA(started = started[indat_complete],
+		                              ended = ended[indat_complete],
+		                              working_hours = working_hours)
+		return(result)
+
+}
+
+#' @title Internal calculation of office hours between time stamps
+#' @details Don't call this funciton externally, use \code{difftime_office_hours} that validates input and handles NA-values
+#' @param started Start time of period, as POSIX. NA-values is NOT allowed
+#' @param ended End time of period, as POSIX. NA-values is NOT allowed
+#' @param working_hours Vector of lenght 2, start and end of office day in hours. Default c(8,16)
+#' @return Number of office hours between time stamps
+#' @keywords internal
+
+# Vectorized internal function to actualy calculate difftime
+difftime_office_hours_no_NA <-   	function(started, ended, working_hours) {
 	  # When does working hours start at day? decimal hours
 	  day_start <-
 	    lubridate::duration(working_hours[1], units = "hours")
@@ -75,39 +100,51 @@ difftime_office_hours <-
 	  }
 
 #' @title POSIX to duration since mid night
-# #' @name Transform a POSIX time to duration since mid night.
 #' @param x a vector of objects of class POSIX time
 #' @return object of class duration
-# #' @rdname time_as_duration
-#' @rdname internal
 #' @keywords internal
 
 time_as_duration <- function(x)  lubridate::as.duration(x - lubridate::floor_date(x, unit = "day"))
 
-#' Number of working days
+#' Number of working days, atomic
 #' Calculates number of work days, currently just by week days mon-fri
 #'
 #' @param x is a vector of dates in POSIX-format
 #' @return a numeric vector of number of working days in period
 # #' @rdname work_days_n
-#' @rdname internal
+# #' @rdname internal_functinons
 #' @keywords internal
-#'
+
+# Atomic function that returns number of days mon-fri in period.
 work_days_atomic <- function (x) {
-  # work_days_logical <- lubridate::wday(x) %in% c(2:6)
-  (lubridate::wday(x) %in% c(2:6)) %>% sum %>% return
+    (lubridate::wday(x) %in% c(2:6)) %>% sum %>% return
 }
 
+#' Number of working days, wrapper
+#' Calls \code{work_days_atomic} that calculates number of work days
+#'
+#' @param x is a list of vector of dates in POSIX-format
+#' @return a numeric vector of number of working days in period
+# #' @rdname work_days_n
+# #' @rdname internal_functinons
+#' @keywords internal
+
+#
 work_days_n <- function (x) lapply(x, work_days_atomic) %>% unlist
 
+#' Create sequence of days in span
+#' Creates a sequence with dates from \code{started} to \code{ended}, indcluding first + last day
+#'
+#' @param started An atomic vector of POSIX time for start time
+#' @param ended An atomic vector of POSIX time for end time
+#' @return a numeric vector of number of working days in period
+#' @keywords internal
 # Atomic function to calculate dates in span started to end, indcluding first + last day
-dates_span_fun <- function(started_internal, ended_internal)	{
-  if(is.na(started_internal) | is.na(ended_internal)) return(NULL)
-
-	seq(
-		lubridate::floor_date(started_internal, unit = "day"),
-		lubridate::floor_date(ended_internal, unit = "day"), by = "days"
-	) %>% return
+dates_span_fun <- function(started, ended)	{
+  seq(
+    lubridate::floor_date(started, unit = "day"),
+    lubridate::floor_date(ended, unit = "day"), by = "days"
+  ) %>% return
 }
 
 
@@ -171,3 +208,9 @@ dates_span_fun <- function(started_internal, ended_internal)	{
 #
 # wday(dates_in_span) %in% c(2:6)
 # str(dates_in_span)
+
+#
+# 		# see if input values is.time, return NULL if not
+# 	  if(assertthat::see_if(!all(assertthat::is.time(started),assertthat::is.time(ended)))){
+# 	  	return(NULL)
+# 	  }
