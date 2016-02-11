@@ -17,7 +17,7 @@ difftime_office_hours(started, ended, working_hours = c(8, 16))
 Number of office hours between time stamps
 }
 \description{
-\code{difftime_office_hours} Calculate number of office hours between time stamps. Office hours is default mon - fri, 8:00 to 16:00
+Calculate number of office hours between time stamps. Office hours is default mon - fri, 8:00 to 16:00
 }
 \details{
 More info here later? Or remove...
