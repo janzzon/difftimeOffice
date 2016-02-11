@@ -22,7 +22,4 @@ Calculate number of office hours between time stamps. Office hours is default mo
 \details{
 More info here later? Or remove...
 }
-\author{
-Stefan Jansson, \email{janzzon@gmail.com}
-}
 
