@@ -11,7 +11,9 @@ Additional holliday days can probably be added by modifying the internal functio
 Arguments:  
 * `started` Start time of period, as POSIX
 * `ended` End time of period, as POSIX
-* `working_hours` Vector of lenght 2, start and end of office day in hours. Default c(8,16)
+* `working_hours` Vector of lenght 2, start and end of office day in hours. Default c(8,16)  
+  
+Output is of class Duration from package `lubridate`, units is seconds. 
 
 ## Installation
 `devtools::install_github("janzzon/difftimeOffice")`
