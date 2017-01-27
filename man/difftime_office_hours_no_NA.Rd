@@ -11,7 +11,7 @@ difftime_office_hours_no_NA(started, ended, working_hours)
 
 \item{ended}{End time of period, as POSIX. NA-values is NOT allowed}
 
-\item{working_hours}{Vector of lenght 2, start and end of office day in hours. Default c(8,16)}
+\item{working_hours}{Vector of length 2, start and end of office day in hours. Default c(8,16)}
 }
 \value{
 Number of office hours between time stamps
@@ -20,7 +20,7 @@ Number of office hours between time stamps
 Internal calculation of office hours between time stamps
 }
 \details{
-Don't call this funciton externally, use \code{difftime_office_hours} that validates input and handles NA-values
+Don't call this function externally, use \code{difftime_office_hours} that validates input and handles NA-values
 }
 \keyword{internal}
 

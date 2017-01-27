@@ -3,7 +3,7 @@
 \name{dates_span_fun}
 \alias{dates_span_fun}
 \title{Create sequence of days in span
-Creates a sequence with dates from \code{started} to \code{ended}, indcluding first + last day. Not vectorized.}
+Creates a sequence with dates from \code{started} to \code{ended}, including first + last day. Not vectorized.}
 \usage{
 dates_span_fun(started, ended)
 }
@@ -17,7 +17,7 @@ a numeric vector of number of working days in period
 }
 \description{
 Create sequence of days in span
-Creates a sequence with dates from \code{started} to \code{ended}, indcluding first + last day. Not vectorized.
+Creates a sequence with dates from \code{started} to \code{ended}, including first + last day. Not vectorized.
 }
 \keyword{internal}
 

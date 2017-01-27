@@ -14,7 +14,7 @@
 #' @export
 #' @param started Start time of period, as POSIX
 #' @param ended End time of period, as POSIX
-#' @param working_hours Vector of lenght 2, start and end of office day in hours. Default c(8,16)
+#' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
 
 # Wrapper function to verify input as valid and to handle NA-values.
 difftime_office_hours <-
@@ -61,10 +61,10 @@ difftime_office_hours <-
 
 #' Internal calculation of office hours
 #' @description Internal calculation of office hours between time stamps
-#' @details Don't call this funciton externally, use \code{difftime_office_hours} that validates input and handles NA-values
+#' @details Don't call this function externally, use \code{difftime_office_hours} that validates input and handles NA-values
 #' @param started Start time of period, as POSIX. NA-values is NOT allowed
 #' @param ended End time of period, as POSIX. NA-values is NOT allowed
-#' @param working_hours Vector of lenght 2, start and end of office day in hours. Default c(8,16)
+#' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
 #' @return Number of office hours between time stamps
 #' @keywords internal
 
@@ -94,7 +94,7 @@ difftime_office_hours_no_NA <-
     hours_last_day <-
       ifelse(work_days_n(ended) == 1, timestamp_day(ended), day_end) - day_start
 
-    # All dates in span started to end, indcluding first + last day
+    # All dates in span started to end, including first + last day
     dates_in_span <-
       mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
     hours_working_days <- (work_days_n(dates_in_span) - 2) *
@@ -135,7 +135,7 @@ work_days_n <-
     lapply(x, work_days_atomic) %>% unlist %>% return
 
 #' Create sequence of days in span
-#' Creates a sequence with dates from \code{started} to \code{ended}, indcluding first + last day. Not vectorized.
+#' Creates a sequence with dates from \code{started} to \code{ended}, including first + last day. Not vectorized.
 #'
 #' @param started An atomic vector of POSIX time for start time
 #' @param ended An atomic vector of POSIX time for end time

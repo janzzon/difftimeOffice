@@ -11,7 +11,7 @@ difftime_office_hours(started, ended, working_hours = c(8, 16))
 
 \item{ended}{End time of period, as POSIX}
 
-\item{working_hours}{Vector of lenght 2, start and end of office day in hours. Default c(8,16)}
+\item{working_hours}{Vector of length 2, start and end of office day in hours. Default c(8,16)}
 }
 \value{
 Number of office hours between time stamps
