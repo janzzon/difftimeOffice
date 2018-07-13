@@ -15,10 +15,14 @@
 #' @param started Start time of period, as POSIX
 #' @param ended End time of period, as POSIX
 #' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
+#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
 
 # Wrapper function to verify input as valid and to handle NA-values.
-difftime_office_hours <-
-  function(started, ended, working_hours = c(8, 16)) {
+difftime_office_hours <- function(started, 
+                                  ended, 
+                                  working_hours = c(8, 16), 
+                                  holidays = c('01/01/1901', '01/02/1901')) {
+
     # Assert input is correct.
     ### Assertions of input ####
     assertthat::assert_that(is.vector(working_hours))
@@ -31,32 +35,34 @@ difftime_office_hours <-
     assertthat::assert_that(all(assertthat::is.time(started),assertthat::is.time(ended)))
     assertthat::assert_that(length(started) == length(ended))
     ### end assertions ####
-
+    
     # Convert to POSIXct if input is class POSIXlt
     if(any(class(started) == "POSIXlt")) started <- as.POSIXct(started)
     if(any(class(ended) == "POSIXlt")) ended <- as.POSIXct(ended)
-
+    
     # Vectors for subsets where time difference is 0/positive or negative
     # Presence of NA in input will give NA as output
     indat_pos <- which(started <= ended)
     indat_neg <- which(started > ended)
-
+    
     # create empty result vector
     result <- rep(lubridate::as.duration(NA),length(started))
-
+    
     # call function for
     result[indat_pos] <-
       difftime_office_hours_no_NA(started = started[indat_pos],
                                   ended = ended[indat_pos],
-                                  working_hours = working_hours)
-
+                                  working_hours = working_hours,
+                                  holidays = holidays)
+    
     result[indat_neg] <-
       -difftime_office_hours_no_NA(started = ended[indat_neg],
                                    ended = started[indat_neg],
-                                   working_hours = working_hours)
-
+                                   working_hours = working_hours,
+                                   holidays = holidays)
+    
     return(result)
-
+    
   }
 
 #' Internal calculation of office hours
@@ -65,40 +71,45 @@ difftime_office_hours <-
 #' @param started Start time of period, as POSIX. NA-values is NOT allowed
 #' @param ended End time of period, as POSIX. NA-values is NOT allowed
 #' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
+#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
 #' @return Number of office hours between time stamps
 #' @keywords internal
 
 # Atomic internal function to actualy calculate difftime
-difftime_office_hours_no_NA <-
-  function(started, ended, working_hours) {
+difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays) {
     # When does working hours start at day? decimal hours
-    day_start <-
-      lubridate::duration(working_hours[1], units = "hours")
+    day_start <- lubridate::duration(working_hours[1], units = "hours")
     # When does working hours end at day? decimal hours
-    day_end <-
-      lubridate::duration(working_hours[2], units = "hours")
-
+    day_end <- lubridate::duration(working_hours[2], units = "hours")
+    
     # Set timestamp to be within working hours. all values as duration
-    timestamp_day <-
-      function(time_vec) {
-        lapply (time_vec, function(timestamp) {
-          timestamp %>% time_as_duration %>% max(day_start) %>%
-            min(day_end)
-        }) %>% unlist %>% lubridate::as.duration() %>% return
+    timestamp_day <- function(time_vec) {
+      lapply (time_vec, function(timestamp) {
+        timestamp %>% 
+          time_as_duration %>%
+          max(day_start) %>%
+          min(day_end)
+        }) %>% 
+        unlist() %>% 
+        lubridate::as.duration() %>% 
+        return()
       }
-
+    
     # Hours from start time stamp to end of working hours. Full day if not work day.
-    hours_first_day <-
-      day_end - ifelse(work_days_n(started) == 1, timestamp_day(started),day_start)
+    hours_first_day <- day_end - ifelse(work_days_n(started) == 1,
+                                        timestamp_day(started),
+                                        day_start)
     # Hours from start of working hours to time stamp. Full day if not work day.
-    hours_last_day <-
-      ifelse(work_days_n(ended) == 1, timestamp_day(ended), day_end) - day_start
-
+    hours_last_day <- ifelse(work_days_n(ended) == 1, 
+                             timestamp_day(ended), 
+                             day_end) - day_start
+    
     # All dates in span started to end, including first + last day
-    dates_in_span <-
-      mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
-    hours_working_days <- (work_days_n(dates_in_span) - 2) *
-      (day_end - day_start)
+    dates_in_span <- mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
+    # Filter all dates to exclude holidays
+    non_holiday_dates <- dates_in_span %>% 
+      lapply(grab_non_holidays_only, holidays)
+    hours_working_days <- (work_days_n(non_holiday_dates) - 2) * (day_end - day_start)
     # hours_first_day + hours_last_day +
     return(hours_first_day + hours_last_day + hours_working_days)
   }
@@ -108,9 +119,10 @@ difftime_office_hours_no_NA <-
 #' @return object of class duration
 #' @keywords internal
 
-time_as_duration <-
-  function(x)
-    lubridate::as.duration(x - lubridate::floor_date(x, unit = "day")) %>% return
+time_as_duration <- function(x) {
+    lubridate::as.duration(x - lubridate::floor_date(x, unit = "day")) %>% 
+    return()
+}
 
 #' Number of working days, atomic
 #' Calculates number of work days, currently just by week days mon-fri
@@ -121,7 +133,9 @@ time_as_duration <-
 
 # Atomic function that returns number of days mon-fri in period.
 work_days_atomic <- function (x) {
-  (lubridate::wday(x) %in% c(2:6)) %>% sum %>% return
+  (lubridate::wday(x) %in% c(2:6)) %>% 
+    sum() %>% 
+    return()
 }
 
 #' Number of working days, wrapper
@@ -130,10 +144,11 @@ work_days_atomic <- function (x) {
 #' @param x is a list of vector of dates in POSIX-format
 #' @return a numeric vector of number of working days in period
 #' @keywords internal
-work_days_n <-
-  function (x)
-    lapply(x, work_days_atomic) %>% unlist %>% return
-
+work_days_n <- function (x) {
+    lapply(x, work_days_atomic) %>% 
+    unlist() %>% 
+    return()
+}
 #' Create sequence of days in span
 #' Creates a sequence with dates from \code{started} to \code{ended}, including first + last day. Not vectorized.
 #'
@@ -145,5 +160,25 @@ dates_span_fun <- function(started, ended)	{
   seq(
     lubridate::floor_date(started, unit = "day"),
     lubridate::floor_date(ended, unit = "day"), by = "days"
-  ) %>% return
+  ) %>% 
+    return()
 }
+
+#' Filter sequence of days in span to exclude holidays. Vectorized.
+#'
+#' @param dates a numeric vector of number of working days in period
+#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
+#' @return a numeric vector of number of working days (minus holidays) in period
+#' @keywords internal
+grab_non_holidays_only <- function(dates, holidays) {
+  holidays_to_remove <- holidays %>% lubridate::mdy(tz = 'UTC') %>% as.POSIXct(tz = 'UTC')
+  non_holidays <- dates [! dates %in% holidays_to_remove]
+  return(non_holidays)
+}
+
+# started <- testy$Stage1_CreateDate[82:83]
+# ended <- testy$Stage1_EndDate2_Stage2_StartDate[82:83]
+# working_hours <- c(8, 16)
+# holidays <- c('01/01/1901', '01/02/1901')
+# 
+# difftime_office_hours(started, ended, working_hours, holidays)
