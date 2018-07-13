@@ -1,12 +1,11 @@
 Package: difftimeOffice
 Type: Package
 Title: Calculate office hours between time stamps
-Version: 0.2.0  
-Date: 2018-07-13
+Version: 0.1.9001
+Date: 2017-01-27
 Authors@R: person("Stefan", "Jansson", email = "janzzon@gmail.com", role = c("aut", "cre"))
 Description: Calculate number of office hours between time stamps.
     Office hours is default mon - fri, 8:00 to 16:00.
-    Optionally exclude holidays by supplying them yourself.
 URL: https://github.com/janzzon/difftimeOffice
 License: GPL-2
 LazyData: TRUE
