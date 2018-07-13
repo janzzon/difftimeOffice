@@ -6,7 +6,7 @@ Date: 2018-07-13
 Authors@R: Authors@R: c(
   person("Stefan", "Jansson", email = "janzzon@gmail.com", role = c("aut", "cre")), 
   person("John", "Cassil", email = "john@johncassil.com", role = c("ctb"))
-)
+  )
 Description: Calculate number of office hours between time stamps. Office hours is default mon - fri, 8:00 to 16:00.
 Optionally exclude holidays by supplying them yourself.
 URL: https://github.com/janzzon/difftimeOffice
