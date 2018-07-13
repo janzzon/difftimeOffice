@@ -3,7 +3,7 @@ Type: Package
 Title: Calculate office hours between time stamps
 Version: 0.2.0  
 Date: 2018-07-13
-Authors@R: Authors@R: c(
+Authors@R: c(
   person("Stefan", "Jansson", email = "janzzon@gmail.com", role = c("aut", "cre")), 
   person("John", "Cassil", email = "john@johncassil.com", role = c("ctb"))
   )
