@@ -100,7 +100,7 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
                                         day_end,
                                         ifelse(work_days_n(started) == 1,
                                                timestamp_day(started),
-                                               day_start)
+                                               day_end)
                                         )
     
     # Hours from start of working hours to time stamp if not a holiday or a non-work day.
