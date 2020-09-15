@@ -95,24 +95,41 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
         return()
       }
     
-    # Hours from start time stamp to end of working hours. Full day if not work day.
-    hours_first_day <- day_end - ifelse(work_days_n(started) == 1,
-                                        timestamp_day(started),
-                                        day_start)
-    # Hours from start of working hours to time stamp. Full day if not work day.
-    hours_last_day <- ifelse(work_days_n(ended) == 1, 
-                             timestamp_day(ended), 
-                             day_end) - day_start
+    # Hours from start time stamp to end of working hours if not a holiday or a non-work day.
+    hours_first_day <- day_end - ifelse(format(started, '%m/%d/%Y') %in% holidays,
+                                        day_end,
+                                        ifelse(work_days_n(started) == 1,
+                                               timestamp_day(started),
+                                               day_end)
+                                        )
     
-    # All dates in span started to end, including first + last day
+    # Hours from start of working hours to time stamp if not a holiday or a non-work day.
+    hours_last_day <- (ifelse(format(ended, '%m/%d/%Y') %in% holidays,
+                             day_start,
+                             ifelse(work_days_n(ended) == 1, 
+                                    timestamp_day(ended), 
+                                    day_start))) - day_start
+  
+    #If calculating same-day times:
+    hours_first_and_last_day <- ifelse(lubridate::date(started) == lubridate::date(ended) &
+                                           !format(started, '%m/%d/%Y') %in% holidays,
+                                       min(timestamp_day(ended), day_end) - 
+                                           max(timestamp_day(started), day_start),
+                                       hours_first_day + hours_last_day) %>% 
+        lubridate::as.duration()
+  
+    # All dates in span started to ended, excluding first + last day
     dates_in_span <- mapply(dates_span_fun, started, ended, SIMPLIFY = FALSE)
+    
     # Filter all dates to exclude holidays
     non_holiday_dates <- dates_in_span %>% 
       lapply(grab_non_holidays_only, holidays)
-    hours_working_days <- (work_days_n(non_holiday_dates) - 2) * (day_end - day_start)
-    # hours_first_day + hours_last_day +
-    return(hours_first_day + hours_last_day + hours_working_days)
-  }
+    
+    # Get hours from all non-holiday, non-weekends in the days between the first and last day of the timespan:
+    hours_working_days <- (work_days_n(non_holiday_dates)) * (day_end - day_start)
+    
+    return(hours_first_and_last_day + hours_working_days)
+}
 
 #' POSIX to duration since mid night
 #' @param x a vector of objects of class POSIX time
@@ -157,11 +174,16 @@ work_days_n <- function (x) {
 #' @return a numeric vector of number of working days in period
 #' @keywords internal
 dates_span_fun <- function(started, ended)	{
-  seq(
-    lubridate::floor_date(started, unit = "day"),
-    lubridate::floor_date(ended, unit = "day"), by = "days"
-  ) %>% 
-    return()
+    day_after_started <- started + lubridate::days(1)
+    day_before_ended <- ended - lubridate::days(1)
+    if(day_before_ended < day_after_started) {return(as.POSIXct(rep(NA, 1)))}
+    return(
+        seq(
+            lubridate::floor_date(day_after_started, unit = "day"),
+            lubridate::floor_date(day_before_ended, unit = "day"), 
+            by = "days"
+        )
+    )
 }
 
 #' Filter sequence of days in span to exclude holidays. Vectorized.
@@ -175,10 +197,3 @@ grab_non_holidays_only <- function(dates, holidays) {
   non_holidays <- dates [! dates %in% holidays_to_remove]
   return(non_holidays)
 }
-
-# started <- testy$Stage1_CreateDate[82:83]
-# ended <- testy$Stage1_EndDate2_Stage2_StartDate[82:83]
-# working_hours <- c(8, 16)
-# holidays <- c('01/01/1901', '01/02/1901')
-# 
-# difftime_office_hours(started, ended, working_hours, holidays)
