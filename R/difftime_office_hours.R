@@ -15,13 +15,13 @@
 #' @param started Start time of period, as POSIX
 #' @param ended End time of period, as POSIX
 #' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
-#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
+#' @param holidays any holiday or combination of holidays in the '%Y-%m-%d' format. Default c('1901-01-01', '1901-01-02')
 
 # Wrapper function to verify input as valid and to handle NA-values.
 difftime_office_hours <- function(started, 
                                   ended, 
                                   working_hours = c(8, 16), 
-                                  holidays = c('01/01/1901', '01/02/1901')) {
+                                  holidays = c('1901-01-01', '1901-01-02')) {
 
     # Assert input is correct.
     ### Assertions of input ####
@@ -71,7 +71,7 @@ difftime_office_hours <- function(started,
 #' @param started Start time of period, as POSIX. NA-values is NOT allowed
 #' @param ended End time of period, as POSIX. NA-values is NOT allowed
 #' @param working_hours Vector of length 2, start and end of office day in hours. Default c(8,16)
-#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
+#' @param holidays any holiday or combination of holidays in the '%Y-%m-%d' format. Default c('1901-01-01', '1901-01-02')
 #' @return Number of office hours between time stamps
 #' @keywords internal
 
@@ -96,7 +96,7 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
       }
     
     # Hours from start time stamp to end of working hours if not a holiday or a non-work day.
-    hours_first_day <- day_end - ifelse(format(started, '%m/%d/%Y') %in% holidays,
+    hours_first_day <- day_end - ifelse(format(started, '%Y-%m-%d') %in% holidays,
                                         day_end,
                                         ifelse(work_days_n(started) == 1,
                                                timestamp_day(started),
@@ -104,7 +104,7 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
                                         )
     
     # Hours from start of working hours to time stamp if not a holiday or a non-work day.
-    hours_last_day <- (ifelse(format(ended, '%m/%d/%Y') %in% holidays,
+    hours_last_day <- (ifelse(format(ended, '%Y-%m-%d') %in% holidays,
                              day_start,
                              ifelse(work_days_n(ended) == 1, 
                                     timestamp_day(ended), 
@@ -112,7 +112,7 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
   
     #If calculating same-day times:
     hours_first_and_last_day <- ifelse(lubridate::date(started) == lubridate::date(ended) &
-                                           !format(started, '%m/%d/%Y') %in% holidays,
+                                           !format(started, '%Y-%m-%d') %in% holidays,
                                        min(timestamp_day(ended), day_end) - 
                                            max(timestamp_day(started), day_start),
                                        hours_first_day + hours_last_day) %>% 
@@ -189,11 +189,11 @@ dates_span_fun <- function(started, ended)	{
 #' Filter sequence of days in span to exclude holidays. Vectorized.
 #'
 #' @param dates a numeric vector of number of working days in period
-#' @param holidays any holiday or combination of holidays in the '%m/%d/Y' format. Default c('01/01/1901', '01/02/1901')
+#' @param holidays any holiday or combination of holidays in the '%Y-%m-%d' format. Default c('1901-01-01', '1901-01-02')
 #' @return a numeric vector of number of working days (minus holidays) in period
 #' @keywords internal
 grab_non_holidays_only <- function(dates, holidays) {
-  holidays_to_remove <- holidays %>% lubridate::mdy(tz = 'UTC') %>% as.POSIXct(tz = 'UTC')
+  holidays_to_remove <- holidays %>% as.POSIXct()
   non_holidays <- dates [! dates %in% holidays_to_remove]
   return(non_holidays)
 }

@@ -157,3 +157,36 @@ test_that("Modified working_hours, different day",{
     ,rep(lubridate::duration(-60, units = "hours"),4)
   )
 })
+
+
+test_that("Holidays are removed as expected",{
+  expect_equal(
+    difftime_office_hours( #first day is a holiday
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = "2016-01-05"
+    ),lubridate::duration(16, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #first two days are holidays
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-05","2016-01-06")
+    ),lubridate::duration(8, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #both days are holidays
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-06 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-05","2016-01-06")
+    ),lubridate::duration(0, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #middle day is a holiday
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-06")
+    ),lubridate::duration(16, units = "hours")
+  )
+  
+  
+})
