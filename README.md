@@ -5,7 +5,7 @@ A package containing one exported function `difftime_office_hours()`, which calc
 Office hours is default monday to friday, 8:00 to 16:00.
 Start and end time of day can be set with argument `working_hours`.
 Holidays can be provided to the function with argument `holidays`. (This ensures that any holidays are compatible, no matter the country or office)
- 
+
 
 ## Usage
 `difftime_office_hours(started, ended, working_hours = c(8, 16))`  
