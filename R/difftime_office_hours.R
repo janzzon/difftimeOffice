@@ -34,11 +34,16 @@ difftime_office_hours <- function(started,
     assertthat::assert_that(working_hours[1] <= working_hours[2])
     assertthat::assert_that(all(assertthat::is.time(started),assertthat::is.time(ended)))
     assertthat::assert_that(length(started) == length(ended))
+    assertthat::assert_that(is.vector(holidays))
     ### end assertions ####
     
     # Convert to POSIXct if input is class POSIXlt
     if(any(class(started) == "POSIXlt")) started <- as.POSIXct(started)
     if(any(class(ended) == "POSIXlt")) ended <- as.POSIXct(ended)
+    
+    # Make holidays into a date object and error out if not possible
+    holidays <- holidays %>% lubridate::ymd()
+    if(anyNA(holidays)){stop("Holidays failed to parse. Holidays should in the '%Y-%m-%d' format. e.g: c('2019-06-30','2020-01-05')")}
     
     # Vectors for subsets where time difference is 0/positive or negative
     # Presence of NA in input will give NA as output
@@ -96,23 +101,26 @@ difftime_office_hours_no_NA <- function(started, ended, working_hours, holidays)
       }
     
     # Hours from start time stamp to end of working hours if not a holiday or a non-work day.
-    hours_first_day <- day_end - ifelse(format(started, '%Y-%m-%d') %in% holidays,
-                                        day_end,
-                                        ifelse(work_days_n(started) == 1,
-                                               timestamp_day(started),
-                                               day_end)
-                                        )
+    hours_first_day <- ( day_end - ifelse( lubridate::date(started) %in% holidays,
+                                          day_end,
+                                          ifelse(work_days_n(started) == 1,
+                                                 timestamp_day(started),
+                                                 day_end)
+                                          ) 
+                         ) %>% round(1)
+    
     
     # Hours from start of working hours to time stamp if not a holiday or a non-work day.
-    hours_last_day <- (ifelse(format(ended, '%Y-%m-%d') %in% holidays,
+    hours_last_day <- ( (ifelse(lubridate::date(ended) %in% holidays,
                              day_start,
                              ifelse(work_days_n(ended) == 1, 
                                     timestamp_day(ended), 
-                                    day_start))) - day_start
+                                    day_start))) - day_start 
+                        ) %>% round(1)
   
     #If calculating same-day times:
     hours_first_and_last_day <- ifelse(lubridate::date(started) == lubridate::date(ended) &
-                                           !format(started, '%Y-%m-%d') %in% holidays,
+                                           !lubridate::date(started) %in% holidays,
                                        min(timestamp_day(ended), day_end) - 
                                            max(timestamp_day(started), day_start),
                                        hours_first_day + hours_last_day) %>% 
@@ -176,11 +184,11 @@ work_days_n <- function (x) {
 dates_span_fun <- function(started, ended)	{
     day_after_started <- started + lubridate::days(1)
     day_before_ended <- ended - lubridate::days(1)
-    if(day_before_ended < day_after_started) {return(as.POSIXct(rep(NA, 1)))}
+    if(as.Date(day_before_ended) < as.Date(day_after_started)) {return(as.POSIXct(rep(NA, 1)))}
     return(
         seq(
-            lubridate::floor_date(day_after_started, unit = "day"),
-            lubridate::floor_date(day_before_ended, unit = "day"), 
+            lubridate::floor_date(day_after_started, unit = "day") %>% as.Date(),
+            lubridate::floor_date(day_before_ended, unit = "day") %>% as.Date(), 
             by = "days"
         )
     )
@@ -193,7 +201,6 @@ dates_span_fun <- function(started, ended)	{
 #' @return a numeric vector of number of working days (minus holidays) in period
 #' @keywords internal
 grab_non_holidays_only <- function(dates, holidays) {
-  holidays_to_remove <- holidays %>% as.POSIXct()
-  non_holidays <- dates [! dates %in% holidays_to_remove]
+  non_holidays <- dates[!dates %in% holidays]
   return(non_holidays)
 }
