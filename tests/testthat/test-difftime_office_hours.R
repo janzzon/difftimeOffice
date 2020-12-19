@@ -157,3 +157,90 @@ test_that("Modified working_hours, different day",{
     ,rep(lubridate::duration(-60, units = "hours"),4)
   )
 })
+
+
+test_that("Holidays are removed as expected",{
+  expect_equal(
+    difftime_office_hours( #first day is a holiday
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = "2016-01-05"
+    ),lubridate::duration(16, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #first two days are holidays
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-05","2016-01-06")
+    ),lubridate::duration(8, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #both days are holidays
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-06 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-05","2016-01-06")
+    ),lubridate::duration(0, units = "hours")
+  )
+  
+  expect_equal(
+    difftime_office_hours( #middle day is a holiday
+      as.POSIXct("2016-01-05 8:00:00"), as.POSIXct("2016-01-07 16:00:00"),working_hours = c(8, 16),
+      holidays = c("2016-01-06")
+    ),lubridate::duration(16, units = "hours")
+  )
+  
+  
+  testthat::expect_equal(
+    difftime_office_hours(as.POSIXct("2020-01-06 14:17:00"), 
+                          as.POSIXct("2020-01-08 07:21:00")) %>% as.numeric(),
+    34980)
+  
+  testthat::expect_equal(
+    difftime_office_hours(as.POSIXct("2020-01-06 14:17:00"), 
+                          as.POSIXct("2020-01-08 07:21:00"), 
+                          working_hours = c(7, 19)) %>% as.numeric(), 
+    61440)
+  
+  testthat::expect_equal(
+    difftime_office_hours(as.POSIXct("2016-01-05 8:00:00"), 
+                          as.POSIXct("2016-01-07 16:00:00"),
+                          working_hours = c(8, 16), 
+                          holidays = "2016-01-05") %>% as.numeric(),
+    57600) 
+  
+  
+  testthat::expect_equal(
+    difftime_office_hours(as.POSIXct("2016-01-05 8:00:00"),
+                          as.POSIXct("2016-01-07 16:00:00"),
+                          working_hours = c(8, 16),
+                          holidays = c("2016-01-05","2016-01-06")) %>% as.numeric(),
+    28800   
+  )
+  
+  
+  
+  testthat::expect_equal(
+    difftime_office_hours(lubridate::mdy_hm('05/17/2020 12:15'), 
+                          lubridate::mdy_hm('05/18/2020 08:01'), 
+                          holidays = c('2020-05-01', '2020-05-08', '2020-05-21'), 
+                          working_hours = c(8, 18)) %>% as.numeric(),
+    60)
+  
+  
+  testthat::expect_equal(
+    difftime_office_hours(lubridate::mdy_hm('05/01/2020 10:00'), 
+                          lubridate::mdy_hm('05/04/2020 08:59'), 
+                          holidays = c('2020-05-01', '2020-05-08', '2020-05-21'), 
+                          working_hours = c(8, 18)) %>% as.numeric(),
+    3540)
+  
+  
+  testthat::expect_equal(
+    difftime_office_hours(lubridate::mdy_hm('05/04/2020 09:10'), 
+                          lubridate::mdy_hm('05/04/2020 09:18'), 
+                          holidays = c('2020-05-01', '2020-05-08', '2020-05-21'), 
+                          working_hours = c(8, 18)) %>% as.numeric(),
+    480)
+  
+  
+  
+})
